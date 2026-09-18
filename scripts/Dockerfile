@@ -1,6 +1,14 @@
+# Build process arguments
+
+
 # Container for running Vivado on M1/M2 macs
 # though it should work equally on Intel macs
 FROM --platform=linux/amd64 ubuntu:22.04
+
+# username and password are the same
+ARG USER=pradhan
+
+
 RUN apt-get update && apt-get upgrade -y
 
 # Fix the error of build failing due to not having the frontend installed
@@ -29,23 +37,24 @@ RUN apt-get install -y --no-install-recommends \
 RUN apt-get install -y \
     tigervnc-standalone-server tigervnc-xorg-extension
 
-# create user "user" with password "password"
-RUN useradd --create-home --shell /bin/bash --user-group --groups adm,sudo user
-RUN sh -c 'echo "user:password" | chpasswd'
-# RUN cp -r /root/{.config,.gtkrc-2.0,.asoundrc} /home/user
-RUN chown -R user:user /home/user
+# create user "${USER}" with password "$(USER}"
+RUN useradd --create-home --shell /bin/bash --user-group --groups adm,sudo ${USER}
+# RUN sh -c 'echo "${USER}:${USER}" | chpasswd'
+RUN echo "${USER}:${USER}" | chpasswd
+# RUN cp -r /root/{.config,.gtkrc-2.0,.asoundrc} /home/${USER}
+RUN chown -R ${USER}:${USER} /home/${USER}
 # setup LXDE
-RUN mkdir -p /home/user/.config/pcmanfm/LXDE/
+RUN mkdir -p /home/${USER}/.config/pcmanfm/LXDE/
 RUN ln -sf /usr/local/share/doro-lxde-wallpapers/desktop-items-0.conf \
-    /home/user/.config/pcmanfm/LXDE/
+    /home/${USER}/.config/pcmanfm/LXDE/
 RUN mv /usr/bin/lxpolkit /usr/bin/lxpolkit.bak
 #RUN echo "" >> /etc/xdg/lxsession/LXDE/autostart
-#RUN echo "@lxterminal -e /home/user/scripts/de_start.sh" >> /etc/xdg/lxsession/LXDE/autostart
+#RUN echo "@lxterminal -e /home/${USER}/scripts/de_start.sh" >> /etc/xdg/lxsession/LXDE/autostart
 # setup TigerVNC
 RUN sed -i 's/-iconic/-nowin/g' /etc/X11/Xtigervnc-session
-RUN mkdir /home/user/.vnc
-RUN echo "password" | vncpasswd -f > /vncpasswd
-RUN chown user /vncpasswd
+RUN mkdir /home/${USER}/.vnc
+RUN echo "${USER}" | vncpasswd -f > /vncpasswd
+RUN chown ${USER} /vncpasswd
 RUN chmod 600 /vncpasswd
 
 # Set the locale, because Vivado crashes otherwise
