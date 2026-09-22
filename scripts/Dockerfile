@@ -5,8 +5,10 @@
 # though it should work equally on Intel macs
 FROM --platform=linux/amd64 ubuntu:22.04
 
-# username and password are the same
-ARG USER=pradhan
+# username and password of the Linux account created inside the container,
+# passed through from setup.sh via --build-arg
+ARG USER=user
+ARG PASSWORD=user
 
 
 RUN apt-get update && apt-get upgrade -y
@@ -37,10 +39,9 @@ RUN apt-get install -y --no-install-recommends \
 RUN apt-get install -y \
     tigervnc-standalone-server tigervnc-xorg-extension
 
-# create user "${USER}" with password "$(USER}"
+# create user "${USER}" with password "${PASSWORD}"
 RUN useradd --create-home --shell /bin/bash --user-group --groups adm,sudo ${USER}
-# RUN sh -c 'echo "${USER}:${USER}" | chpasswd'
-RUN echo "${USER}:${USER}" | chpasswd
+RUN echo "${USER}:${PASSWORD}" | chpasswd
 # RUN cp -r /root/{.config,.gtkrc-2.0,.asoundrc} /home/${USER}
 RUN chown -R ${USER}:${USER} /home/${USER}
 # setup LXDE

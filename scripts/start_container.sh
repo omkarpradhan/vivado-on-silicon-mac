@@ -6,6 +6,13 @@ script_dir=$(dirname -- "$(readlink -nf $0)";)
 source "$script_dir/header.sh"
 validate_macos
 
+docker_user=$(tr -d "\n\r\t " < "$script_dir/docker_user")
+if [ -z "$docker_user" ]
+then
+	f_echo "No Docker user found. Run setup.sh first."
+	exit 1
+fi
+
 # this is called when the container stops or ctrl+c is hit
 function stop_container {
     docker kill vivado_container > /dev/null 2>&1
@@ -26,7 +33,7 @@ fi
 killall xvcd > /dev/null 2>&1
 
 # run container
-docker run --init --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H -u user bash /home/user/scripts/linux_start.sh &
+docker run --init --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/$docker_user" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H -u "$docker_user" bash "/home/$docker_user/scripts/linux_start.sh" &
 f_echo "Started container"
 sleep 7
 f_echo "Starting VNC viewer"

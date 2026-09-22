@@ -8,10 +8,10 @@ source "$script_dir/header.sh"
 validate_linux
 
 # generate encoded password file from plain text
-mkdir /home/user/.vnc &> /dev/null
-cat "$script_dir/vncpasswd" | vncpasswd -f > /home/user/.vnc/passwd
+mkdir "$HOME/.vnc" &> /dev/null
+cat "$script_dir/vncpasswd" | vncpasswd -f > "$HOME/.vnc/passwd"
 
-vncserver -DisconnectClients -NeverShared -nocursor -geometry $(tr -d "\n\r\t " < "$script_dir/vnc_resolution") -SecurityTypes VncAuth -PasswordFile /home/user/.vnc/passwd -localhost no -verbose -fg -RawKeyboard -RemapKeys "0xffe9->0xff7e,0xffe7->0xff7e" -- LXDE
+vncserver -DisconnectClients -NeverShared -nocursor -geometry $(tr -d "\n\r\t " < "$script_dir/vnc_resolution") -SecurityTypes VncAuth -PasswordFile "$HOME/.vnc/passwd" -localhost no -verbose -fg -RawKeyboard -RemapKeys "0xffe9->0xff7e,0xffe7->0xff7e" -- LXDE
 # explanation (see also TigerVNC manual):
 #
 # -DisconnectClients -NeverShared:
@@ -25,7 +25,7 @@ vncserver -DisconnectClients -NeverShared -nocursor -geometry $(tr -d "\n\r\t " 
 #     Reads the current value from the vnc_resolution file and adjusts
 #     the resolution accordingly.
 #
-# -SecurityTypes VncAuth -PasswordFile /home/user/.vnc/passwd:
+# -SecurityTypes VncAuth -PasswordFile $HOME/.vnc/passwd:
 #     The connection is unencrypted and the encoded password file
 #     is generated from the file called "vncpasswd". You can change it,
 #     but the password needs to be 6-8 characters long. This is done so

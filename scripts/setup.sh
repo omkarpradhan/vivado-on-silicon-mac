@@ -14,6 +14,30 @@ then
 	exit 1
 fi
 
+# Username and password for the Linux account created inside the container
+docker_user="$1"
+docker_password="$2"
+username_regex="^[a-z][-a-z0-9_]*$"
+password_regex="^[A-Za-z0-9_.-]+$"
+if [[ -z "$docker_user" || -z "$docker_password" ]]
+then
+	f_echo "Usage: $0 <username> <password>"
+	exit 1
+fi
+if ! [[ "$docker_user" =~ $username_regex ]]
+then
+	f_echo "Invalid username. Use lowercase letters, digits, '-' or '_', starting with a letter."
+	exit 1
+fi
+if ! [[ "$docker_password" =~ $password_regex ]]
+then
+	f_echo "Invalid password. Use only letters, digits, '.', '-' or '_'."
+	exit 1
+fi
+export docker_user
+export docker_password
+echo -n "$docker_user" > "$script_dir/docker_user"
+
 # Make sure there are no previous installations in this folder
 if [ -d "$script_dir/../Xilinx" ]
 then
@@ -90,7 +114,7 @@ done
 
 # write file path to "install_bin"
 install_bin_path="${installation_binary#$parent_dir}"
-install_bin_path="/home/user$install_bin_path"
+install_bin_path="/home/$docker_user$install_bin_path"
 echo -n "$install_bin_path" > "$script_dir/install_bin"
 
 # Make the user own the whole folder
@@ -150,9 +174,9 @@ echo ""
 
 # copy de_start.desktop autostart file
 mkdir -p "$script_dir/../.config/autostart"
-cp "$script_dir/de_start.desktop" "$script_dir/../.config/autostart/de_start.desktop"
+sed "s#__DOCKER_HOME__#/home/$docker_user#" "$script_dir/de_start.desktop" > "$script_dir/../.config/autostart/de_start.desktop"
 mkdir "$script_dir/../Desktop"
 
 # Start container
 f_echo "Now, the container is started (only terminal, no GUI) and the actual installation process begins."
-docker run --init -it --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/user" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H -u user bash /home/user/scripts/install_vivado.sh
+docker run --init -it --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/$docker_user" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H -u "$docker_user" bash "/home/$docker_user/scripts/install_vivado.sh"

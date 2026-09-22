@@ -30,8 +30,10 @@ You will also need the Vivado installer file (the "Linux® Self Extracting Web I
 4. Open a terminal. Then copy & paste:
 ```
 cd Downloads/vivado-on-silicon-mac-main
-caffeinate -dim zsh ./scripts/setup.sh
+caffeinate -dim zsh ./scripts/setup.sh <username> <password>
 ```
+`<username>` and `<password>` are used to create the Linux account inside the container (used for `sudo` and to own the installed files). The username must start with a lowercase letter and contain only lowercase letters, digits, `-` or `_`; the password may contain letters, digits, `.`, `-` or `_`.
+
 5. Follow the instructions (in yellow) from the terminal.
 
 Note that the installation requires You to log into Your AMD account. When asked to, allow "Terminal" to access data of other apps (the installation may succeed regardless).
@@ -45,7 +47,7 @@ inside the terminal. The container can be stopped by pressing `Ctrl-C` inside th
 
 USB flashing support is limited, see the "USB Connection" paragraph below.
 
-If you want to exchange files with the container, you need to store them inside the "vivado-on-silicon-mac-main" folder. Inside Vivado, the files will be accessible via the "/home/user" folder.
+If you want to exchange files with the container, you need to store them inside the "vivado-on-silicon-mac-main" folder. Inside Vivado, the files will be accessible via the "/home/<username>" folder, where `<username>` is the one you passed to `setup.sh`.
 
 You can allocate more/less memory and CPU resources to Vivado by going to the Resources tab in the Docker settings.
 
@@ -57,12 +59,12 @@ If the installation fails or Vivado crashes, consider:
 - trying a different version of Vivado
 - increasing RAM / Swap / CPU allocations in the Docker settings.
 
-You may download via `git` instead of downloading the ZIP file and/or modify the scripts. The installation is wholly contained in the repository folder, which is exposed in the Docker container as the `/home/user` folder.
+You may download via `git` instead of downloading the ZIP file and/or modify the scripts. The installation is wholly contained in the repository folder, which is exposed in the Docker container as the `/home/<username>` folder.
 
 Installation on external storage media may work but can cause issues, such as a file system (like FAT32, exFAT, NTFS) that does not support UNIX file permissions.
 
 ## Installing other software
-If you want to use additional Ubuntu packages, specify them in the Dockerfile. If you want to install further AMD / Xilinx software, you can do so by copying the corresponding installer into the folder containing the Vivado installation and launching it via the GUI. __Attention!__ You must install it into the folder `/home/user/Xilinx` because any data outside of `/home/user` does not persist between VM reboots. You can even skip installing Vivado entirely by commenting out the last line of `setup.sh`. I do not plan on supporting this out of the box.
+If you want to use additional Ubuntu packages, specify them in the Dockerfile. If you want to install further AMD / Xilinx software, you can do so by copying the corresponding installer into the folder containing the Vivado installation and launching it via the GUI. __Attention!__ You must install it into the folder `/home/<username>/Xilinx` because any data outside of `/home/<username>` does not persist between VM reboots. You can even skip installing Vivado entirely by commenting out the last line of `setup.sh`. I do not plan on supporting this out of the box.
 
 ## How it works
 ### Docker, Rosetta & VNC
@@ -87,6 +89,7 @@ This version of xvcd only supports the FT2232C chip. There are forks of this sof
 - `cleanup.sh`: Removes Vivado and dotfiles.
 - `xvcd`: [xvcd](https://github.com/tmbinc/xvcd) source and binary copy
 - `install_bin`: Full path to Vivado installation binary
+- `docker_user`: Username of the Linux account inside the container, set by `setup.sh` and reused by `start_container.sh`
 - `vnc_resolution`: Manually adjustable resolution of the container GUI, formatted like "widthxheight"
 - `vncpasswd`: Password for the VNC connection. It is purposefully weak, as it serves no security function. The VNC server inside the container will not allow outside connections. The password can be changed manually nonetheless.
 
