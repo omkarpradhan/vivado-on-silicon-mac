@@ -14,3 +14,6 @@ installer/
 .vnc/
 .xsession-errors
 scripts/install_bin
+vivado.jou
+vivado.log
+.sudo_as_admin_successful

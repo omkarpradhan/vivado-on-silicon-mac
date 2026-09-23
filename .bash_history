@@ -1,0 +1,1 @@
+echo $XILINXD_LICENSE_FILE

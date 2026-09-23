@@ -13,6 +13,14 @@ then
 	exit 1
 fi
 
+container_hostname="${1:-$(hostname -s)}"
+hostname_regex="^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$"
+if ! [[ "$container_hostname" =~ $hostname_regex ]]
+then
+	f_echo "Invalid hostname. Use up to 63 letters, digits or '-', and don't start/end with '-'."
+	exit 1
+fi
+
 # this is called when the container stops or ctrl+c is hit
 function stop_container {
     docker kill vivado_container > /dev/null 2>&1
@@ -33,7 +41,7 @@ fi
 killall xvcd > /dev/null 2>&1
 
 # run container
-docker run --init --rm --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/$docker_user" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H -u "$docker_user" bash "/home/$docker_user/scripts/linux_start.sh" &
+docker run --init --rm --hostname "$container_hostname" --name vivado_container --mount type=bind,source="$script_dir/..",target="/home/$docker_user" -p 127.0.0.1:5901:5901 --platform linux/amd64 x64-linux sudo -H -u "$docker_user" bash "/home/$docker_user/scripts/linux_start.sh" &
 f_echo "Started container"
 sleep 7
 f_echo "Starting VNC viewer"
